@@ -22,6 +22,8 @@ public:
 private:
     bool m_rendererBound{};
     GLuint m_fbo{};
+    GLuint m_cachedTextureId{};
+    QSGTexture *m_cachedQSGTexture{};
 };
 
 } // namespace QMapLibre

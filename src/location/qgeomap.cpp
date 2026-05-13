@@ -41,6 +41,9 @@
 #endif
 
 #include <algorithm>
+#include <QtCore/QLoggingCategory>
+
+Q_LOGGING_CATEGORY(lcMapLibreDebug, "maplibre.debug")
 #include <cmath>
 #include <numbers>
 
@@ -377,6 +380,9 @@ QRectF QGeoMapMapLibrePrivate::visibleArea() const {
 }
 
 void QGeoMapMapLibrePrivate::syncStyleChanges(Map *map) {
+    if (!m_styleChanges.empty()) {
+        qCDebug(lcMapLibreDebug) << "syncStyleChanges: applying" << m_styleChanges.size() << "changes";
+    }
     for (const auto &change : m_styleChanges) {
         if (change->isValid()) {
             change->apply(map);
@@ -467,9 +473,12 @@ QSGNode *QGeoMapMapLibre::updateSceneGraph(QSGNode *oldNode, QQuickWindow *windo
 void QGeoMapMapLibre::onMapChanged(Map::MapChange change) {
     Q_D(QGeoMapMapLibre);
 
+    qCDebug(lcMapLibreDebug) << "onMapChanged:" << change;
+
     if (change == Map::MapChangeDidFinishLoadingStyle || change == Map::MapChangeDidFailLoadingMap) {
         d->m_styleLoaded = true;
     } else if (change == Map::MapChangeWillStartLoadingMap) {
+        qCWarning(lcMapLibreDebug) << "MapChangeWillStartLoadingMap fired — style will reload, layers hidden until done";
         d->m_styleLoaded = false;
         d->m_styleChanges.clear();
 

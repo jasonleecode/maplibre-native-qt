@@ -55,8 +55,8 @@ sed -i "s|readonly property string mbtilesPath:.*|readonly property string mbtil
 sed -i "s|readonly property string mbtilesSrcLayer:.*|readonly property string mbtilesSrcLayer: \"$SOURCE_LAYER\"|" "$SCRIPT_DIR/main.qml"
 
 # 启用详细日志
-export QT_LOGGING_RULES="qt.location.*=true;qt.network.*=true;maplibre.*=true"
-export QML_IMPORT_TRACE=1
+export QT_LOGGING_RULES="qt.location.*=true;qt.network.*=true;maplibre.*=true;maplibre.debug=true;maplibre.glyph=true"
+export QML_IMPORT_TRACE=0
 
 # 启用图形调试信息
 export QSG_INFO=1
@@ -67,5 +67,9 @@ export QSG_RENDER_LOOP=basic
 export QSG_RHI_BACKEND=opengl
 
 echo "使用运行器: $RUNNER"
+
+LOG_FILE="$SCRIPT_DIR/run.log"
+echo "日志写入: $LOG_FILE"
+
 # 确保使用的是我们指定的 Qt 版本中的 qml 工具
-$QT_ROOT_DIR/bin/qml "$SCRIPT_DIR/main.qml"
+$QT_ROOT_DIR/bin/qml "$SCRIPT_DIR/main.qml" 2>&1 | tee "$LOG_FILE"

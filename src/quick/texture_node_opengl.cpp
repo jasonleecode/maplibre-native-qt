@@ -16,6 +16,7 @@ constexpr int DefaultSize = 64;
 namespace QMapLibre {
 
 TextureNodeOpenGL::~TextureNodeOpenGL() {
+    delete m_cachedQSGTexture;
     // Clean up framebuffer
     if (m_fbo != 0) {
         if (const QOpenGLContext *glContext = QOpenGLContext::currentContext()) {
@@ -83,22 +84,24 @@ void TextureNodeOpenGL::render(QQuickWindow *window) {
     // Restore previous framebuffer
     gl->glBindFramebuffer(GL_FRAMEBUFFER, prevFbo);
 
-    // Try to get MapLibre's OpenGL framebuffer texture ID for zero-copy sharing
     const GLuint maplibreTextureId = m_map->getFramebufferTextureId();
-    if (maplibreTextureId > 0) {
-        // Wrap it directly as QSGTexture (zero-copy!)
+    if (maplibreTextureId > 0 && maplibreTextureId != m_cachedTextureId) {
+        // Texture ID changed (e.g. after resize): delete old wrapper and create new one.
+        delete m_cachedQSGTexture;
         const QSize physicalSize = m_size * m_pixelRatio;
-        QSGTexture *qtTexture = QNativeInterface::QSGOpenGLTexture::fromNative(
+        m_cachedQSGTexture = QNativeInterface::QSGOpenGLTexture::fromNative(
             maplibreTextureId, window, physicalSize, QQuickWindow::TextureHasAlphaChannel);
+        m_cachedTextureId = maplibreTextureId;
 
-        if (qtTexture != nullptr) {
-            setTexture(qtTexture);
+        if (m_cachedQSGTexture != nullptr) {
+            setOwnsTexture(false);
+            setTexture(m_cachedQSGTexture);
             setRect(QRectF(QPointF(), m_size));
             setFiltering(QSGTexture::Linear);
-            setOwnsTexture(false); // Don't delete MapLibre's texture!
-            markDirty(QSGNode::DirtyMaterial);
         }
     }
+
+    markDirty(QSGNode::DirtyMaterial);
 }
 
 } // namespace QMapLibre

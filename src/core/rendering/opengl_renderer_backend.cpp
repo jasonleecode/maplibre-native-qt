@@ -91,21 +91,28 @@ void OpenGLRendererBackend::restoreFramebufferBinding() {
 }
 
 void OpenGLRendererBackend::updateRenderer(const mbgl::Size &newSize, uint32_t fbo) {
-    size = newSize;
     const auto width = static_cast<GLsizei>(newSize.width);
     const auto height = static_cast<GLsizei>(newSize.height);
+
+    // Skip texture creation for default framebuffer
+    if (fbo == 0) {
+        size = newSize;
+        return;
+    }
+
+    // Skip if FBO and size are unchanged and we already have a texture — avoids
+    // deleting and recreating the color texture every frame, which causes flashing.
+    if (fbo == m_fbo && m_colorTexture != 0 &&
+        width == static_cast<GLsizei>(size.width) && height == static_cast<GLsizei>(size.height)) {
+        return;
+    }
+
+    size = newSize;
 
 #ifdef MLN_RENDERER_DEBUGGING
     qDebug() << "OpenGLRendererBackend::updateRenderer() - size:" << newSize.width << "x" << newSize.height
              << "fbo:" << fbo << "current m_fbo:" << m_fbo << "current m_colorTexture:" << m_colorTexture;
 #endif
-
-    // Skip texture creation for default framebuffer
-    if (fbo == 0) {
-        // Skip texture creation for default framebuffer
-        // Do NOT reset m_fbo here - keep the custom framebuffer state
-        return;
-    }
 
     // Only update m_fbo for non-default framebuffers
     m_fbo = fbo;

@@ -35,6 +35,15 @@ Window {
         map.center: QtPositioning.coordinate(39.9, 116.4)
         map.zoomLevel: 10
 
+        Text {
+            anchors { right: parent.right; top: parent.top; margins: 8 }
+            text: "Zoom: " + mapView.map.zoomLevel.toFixed(2)
+            color: "white"
+            font.pixelSize: 14
+            style: Text.Outline
+            styleColor: "black"
+        }
+
         MapLibre.style: Style {
             SourceParameter {
                 styleId: "mbtiles-source"
