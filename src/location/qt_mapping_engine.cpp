@@ -87,6 +87,7 @@ QtMappingEngine::QtMappingEngine(const QVariantMap &parameters,
                                        QStringLiteral("maplibre.api.base_url"),
                                        QStringLiteral("maplibre.api.key"),
                                        QStringLiteral("maplibre.map.styles"),
+                                       QStringLiteral("maplibre.map.font.family"),
                                        QStringLiteral("maplibre.cache.memory"),
                                        QStringLiteral("maplibre.cache.directory"),
                                        QStringLiteral("maplibre.cache.size"),
@@ -229,6 +230,12 @@ QtMappingEngine::QtMappingEngine(const QVariantMap &parameters,
     // rendering
     if (parameters.contains(QStringLiteral("maplibre.items.insert_before"))) {
         m_mapItemsBefore = parameters.value(QStringLiteral("maplibre.items.insert_before")).toString();
+    }
+
+    // local font family for CJK / ideograph rendering without a remote glyph server
+    if (parameters.contains(QStringLiteral("maplibre.map.font.family"))) {
+        m_settings.setLocalFontFamily(
+            parameters.value(QStringLiteral("maplibre.map.font.family")).toString());
     }
 
     // client
